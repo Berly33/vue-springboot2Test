@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>detail.html</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+<!--<h2>用户信息</h2>-->
+<!--<div>-->
+<!--<p>ID:<span th:text="${user.id}"></span></p>-->
+<!--<p>名字:<span th:text="${user.username}"></span></p>-->
+<!--<p>年龄:<span th:text="${user.age}"></span></p>-->
+<!--<p>地址:<span th:text="${user.address}"></span></p>-->
+<!--</div>-->
+<div id="app">
+    <el-form :inlinr="true" :model="input5">
+    <el-input placeholder="请输入内容" v-model="input5.id" class="input-with-select" style="width: 20%;margin-left: 20%">
+        <el-button slot="append" @click="sea" icon="el-icon-search"></el-button>
+    </el-input>
+    <el-button type="success" @click="add1">添加</el-button>
+    </el-form>
+    <el-table
+            :data="users"
+            style="width: 100%;"
+            max-height="350">
+        <el-table-column
+                fixed
+                prop="id"
+                label="ID"
+                width="150">
+        </el-table-column>
+        <el-table-column
+                prop="username"
+                label="用户名"
+                width="120">
+        </el-table-column>
+        <el-table-column
+                prop="age"
+                label="年龄"
+                width="120">
+        </el-table-column>
+        <el-table-column
+                prop="address"
+                label="地址"
+                width="120">
+        </el-table-column>
+        <el-table-column label="操作" width="120" style="padding-left: 20%">
+            <template slot-scope="scope">
+                <el-button @click="del(scope)" type="text" size="small">
+                    删除
+                </el-button>
+
+                <el-button @click="upd(scope)" type="text" size="small">
+                    修改
+                </el-button>
+            </template>
+        </el-table-column>
+
+    </el-table>
+    <el-dialog
+            title="提示"
+            :visible.sync="dialogVisible"
+            width="30%"
+            :before-close="handleClose">
+        <el-form label-width="100px" :model="form1">
+            <el-form-item label="id">
+                <el-input v-model="form1.id"></el-input>
+            </el-form-item>
+            <el-form-item label="用户">
+                <el-input v-model="form1.username"></el-input>
+            </el-form-item>
+            <el-form-item label="年龄">
+                <el-input v-model="form1.age"></el-input>
+            </el-form-item>
+            <el-form-item label="地址">
+                <el-input v-model="form1.address"></el-input>
+            </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+    <el-button @click="clear1">取 消</el-button>
+    <el-button type="primary" @click="Add" v-show="type=='qd'">确 定</el-button>
+            <el-button type="primary" @click="upd2" v-show="type=='xgg'">修 改</el-button>
+  </span>
+    </el-dialog>
+
+</div>
+</body>
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="http://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                users: [],
+                input5:{
+                    id:'',
+                },
+                type:'',
+                form1: {
+                    username: '',
+                    id: '',
+                    age: '',
+                    address: ''
+                },
+                dialogVisible: false,
+            }
+
+
+        },
+        methods: {
+            getlist() {
+                let that = this;
+                $.get('getDetail', {}, function (data) {
+                    if (data.success) {
+                        that.users = data.users;
+
+                    }
+                })
+            },
+
+            handleClose(done) {
+                this.$confirm('确认关闭？')
+                    .then(_ => {
+                        done();
+                    })
+                    .catch(_ => {
+                    });
+            },
+            sea(){
+                let that = this;
+                $.get('query', this.input5, function (data) {
+                    console.log(data)
+                    that.users=data
+                })
+            },
+            add1() {
+                let that = this;
+                this.type='qd'
+                that.dialogVisible = true
+
+            },
+            Add() {
+
+                let that = this;
+                $.get('insert', this.form1, function () {
+                    that.dialogVisible = false
+                    that.type=''
+                    that.getlist()
+
+                })
+
+            },
+            upd(val) {
+                this.type='xgg'
+                this.dialogVisible = true
+                this.upd1 = val.row
+                this.form1 = this.upd1
+
+            },
+            upd2(){
+                let that = this;
+                $.get('update', this.form1, function () {
+                    that.dialogVisible = false
+
+                    that.getlist()
+
+                })
+            },
+            clear1(){
+                let that = this;
+                that.dialogVisible=false
+                that.form1={}
+                that.type=''
+            },
+            del(val) {
+                let id = val.row.id
+                let that = this;
+                $.get('delete', {id: id}, function (data) {
+                    that.getlist()
+                })
+            }
+        },
+
+
+
+        mounted: function () {
+            this.getlist()
+
+        }
+
+    })
+</script>
+</html>
